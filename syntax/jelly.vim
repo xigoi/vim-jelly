@@ -10,11 +10,11 @@ syntax match jellyQuick +\v©|ß|¢|Ç|ç|Ñ|ñ|£|Ŀ|ŀ|¦|¡|¿|\/|ƒ|\\|¤|\$
 syntax match jellyNumber '\v[0-9-.ıȷ]+'
 syntax match jellyTwoCharString '\v⁾..'
 syntax match jellyTwoDigitCompressedInt '\v⁽..'
-syntax match jellyString '\v“[^‘’«»]*”'
-syntax match jellyCompressedString '\v“[^”‘’«]*»'
-syntax match jellyCodepageList '\v“[^”’«»]*‘'
-syntax match jellyCompressedInt '\v“[^”‘«»]*’'
-syntax match jellyUnassignedLiteral '\v“[^”‘’»]*«'
+syntax match jellyString '\v“[^‘’«»]{-}”'
+syntax match jellyCompressedString '\v“[^”‘’«]{-}»'
+syntax match jellyCodepageList '\v“[^”’«»]{-}‘'
+syntax match jellyCompressedInt '\v“[^”‘«»]{-}’'
+syntax match jellyUnassignedLiteral '\v“[^”‘’»]{-}«'
 " }}}
 
 " Highlight links {{{
