@@ -1,3 +1,75 @@
+let s:digraph_table = {
+      \   '**': '×', '//': '÷',
+      \   '++': '‘', '--': '’',
+      \   '0n': '¤',
+      \   '12': '½',
+      \   '2d': '¥', '3d': 'ɗ', '4d': 'ʋ',
+      \   '2m': '$', '3m': 'Ɗ', '4m': 'Ʋ',
+      \   '<<': '«', '>>': '»',
+      \   '??': '¿', '!!': '¡',
+      \   'O/': 'Ø', 'AE': 'Æ', 'ae': 'æ', 'OE': 'Œ', 'oe': 'œ', 'D-': 'Ð',
+      \   'OR': '®', 'OC': '©',
+      \   '\n': '¶',
+      \   '^+': '⁺', '^-': '⁻', '^=': '⁼', '^(': '⁽', '^)': '⁾',
+      \   '^0': '°', '^1': '¹', '^2': '²', '^3': '³', '^4': '⁴',
+      \   '^5': '⁵', '^6': '⁶', '^7': '⁷', '^8': '⁸', '^9': '⁹',
+      \   'cn': 'ø', 'cm': 'µ', 'cd': 'ð', 'cr': 'ɓ',
+      \   'ii': 'ı', 'jj': 'ȷ',
+      \   'in': '£', 'im': 'Ŀ', 'id': 'ŀ',
+      \   'ml': '€', 'mr': 'Ɱ',
+      \   'nm': 'Ñ', 'nd': 'ñ',
+      \   'no': '¬',
+      \   'pn': '¢', 'pm': 'Ç', 'pd': 'ç',
+      \   'ss': 'ß', 'th': 'þ', 'TH': 'Þ',
+      \   '||': '¦',
+      \}
+let s:upper_underdot_letters = 'ẠḄ ḌẸ  ḤỊ ḲḶṂṆỌ  ṚṢṬỤṾẈ ỴẒ'
+let s:lower_underdot_letters = 'ạḅ ḍẹ  ḥị ḳḷṃṇọ  ṛṣṭ  ẉ ỵẓ'
+let s:upper_overdot_letters  = 'ȦḂĊḊĖḞĠḢİ  ĿṀṄȮṖ ṘṠṪ  ẆẊẎŻ'
+let s:lower_overdot_letters  = 'ȧḃċḋėḟġḣ   ŀṁṅȯṗ ṙṡṫ  ẇẋẏż'
+let s:upper_hook_letters     = ' ƁƇƊ ƑƓ   Ƙ ⱮƝ Ƥ   Ƭ Ʋ   Ȥ'
+let s:lower_hook_letters     = ' ɓƈɗ ƒɠɦ  ƙ ɱɲ ƥʠɼʂƭ ʋ   ȥ'
+let s:table_path = expand('<sfile>:p:h:h') .. '/chars'
+let s:base250_digits = split('¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ!"#$%&' .. "'" .. '()*+,-./ 0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶°¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ƁƇƊƑƓƘⱮƝƤƬƲȤɓƈɗƒɠɦƙɱɲƥʠɼʂƭʋȥẠḄḌẸḤỊḲḶṂṆỌṚṢṬỤṾẈỴẒȦḂĊḊĖḞĠḢİĿṀṄȮṖṘṠṪẆẊẎŻạḅḍẹḥịḳḷṃṇọṛṣṭ§Äẉỵẓȧḃċḋėḟġḣŀṁṅȯṗṙṡṫẇẋẏż', '\zs')
+
+execute 'command! JellyChars split ' .. s:table_path .. ' | setlocal nomodifiable readonly'
+
+function! s:JellyDigraphToChar() abort
+  let before_cursor = strpart(getline('.'), 0, col('.') - 1)
+  let digraph = strcharpart(before_cursor, strchars(before_cursor) - 2)
+  let first = strcharpart(digraph, 0, 1)
+  let second = strcharpart(digraph, 1, 1)
+  let char = ''
+  if second ==# '.'
+    let n_first = char2nr(first)
+    if 65 <= n_first && n_first <= 90
+      let char = strcharpart(s:upper_underdot_letters, n_first - 65, 1)
+    elseif 97 <= n_first && n_first <= 122
+      let char = strcharpart(s:lower_underdot_letters, n_first - 97, 1)
+    endif
+  endif
+  if second ==# 'i' && first !=# 'i'
+    let n_first = char2nr(first)
+    if 65 <= n_first && n_first <= 90
+      let char = strcharpart(s:upper_overdot_letters, n_first - 65, 1)
+    elseif 97 <= n_first && n_first <= 122
+      let char = strcharpart(s:lower_overdot_letters, n_first - 97, 1)
+    endif
+  endif
+  if second ==# "'"
+    let n_first = char2nr(first)
+    if 65 <= n_first && n_first <= 90
+      let char = strcharpart(s:upper_hook_letters, n_first - 65, 1)
+    elseif 97 <= n_first && n_first <= 122
+      let char = strcharpart(s:lower_hook_letters, n_first - 97, 1)
+    endif
+  endif
+  if char ==# ''
+    let char = get(s:digraph_table, digraph, digraph)
+  endif
+  return "\<bs>\<bs>" .. char
+endfunction
+
 if has('python3')
   function! s:JellyCompressString(string) abort
     python3 << XXX
@@ -80,3 +152,4 @@ else
 endif
 
 nnoremap <leader>jc <cmd>call JellyCompress()<cr>
+inoremap <buffer> <silent> <expr> <tab> <SID>JellyDigraphToChar()
