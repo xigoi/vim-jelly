@@ -8,6 +8,7 @@ syntax match jellyQuick +\v©|ß|¢|Ç|ç|Ñ|ñ|£|Ŀ|ŀ|¦|¡|¿|\/|ƒ|\\|¤|\$
 
 " Literals {{{
 syntax match jellyNumber '\v[0-9-.ıȷ]+'
+syntax match jellyOneCharString '\v”.'
 syntax match jellyTwoCharString '\v⁾..'
 syntax match jellyTwoDigitCompressedInt '\v⁽..'
 syntax match jellyString '\v“[^‘’«»]{-}”'
@@ -22,6 +23,7 @@ highlight link jellyNewline Delimiter
 highlight link jellyChainSeparator Keyword
 highlight link jellyQuick Function
 highlight link jellyNumber Float
+highlight link jellyOneCharString String
 highlight link jellyTwoCharString String
 highlight link jellyTwoDigitCompressedInt Number
 highlight link jellyString String
