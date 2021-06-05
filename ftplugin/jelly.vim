@@ -70,9 +70,14 @@ function! s:JellyDigraphToChar() abort
   return "\<bs>\<bs>" .. char
 endfunction
 
+function! JellyByteCount() abort
+  return 'Whole file: ' .. strchars(join(getline(1, '$'), "\n")) .. ' bytes    Current line: ' .. strchars(getline('.')) .. ' bytes'
+endfunction
+
 if has('python3')
-  function! s:JellyCompressString(string) abort
-    python3 << XXX
+
+  function! JellyCompressString(string) abort
+    python3 << endpython3
 from jelly import code_page, dictionary
 end_len = 2 + max(len(w) for w in dictionary.long) # no need to consider dictionary.short because obviously, it's shorter
 dictionary.short = {v: i for i, v in enumerate(dictionary.short)}
@@ -119,37 +124,45 @@ class Compress(list):
         except ValueError:
           pass
     return min(['“{0}”'.format(str), Compress.go(dp[0])], key=len)
-XXX
+endpython3
     return py3eval('Compress.optimal("' .. escape(a:string, '"\') .. '")')
   endfunction
+
+  function! JellyCompressInteger(num) abort
+    return system('jelly eu "ḃ250ịØJ”“;;”’" ' .. a:num)
+  endfunction
+
   function! JellyCompress() abort
-    let ln = getline('.')
-    let lnlen = strchars(ln)
-    let start = getcurpos()[4] - 1
-    if stridx('”‘’«»', strcharpart(ln, start, 1)) != -1
-      let start -= 1
-    endif
-    while start > 0 && stridx('“”‘’«»', strcharpart(ln, start, 1)) == -1
-      let start -= 1
-    endwhile
-    if strcharpart(ln, start, 1) == '“'
-      let end = start + 1
-      while end < lnlen - 1 && stridx('“”‘’«»', strcharpart(ln, end, 1)) == -1
-        let end += 1
-      endwhile
-      if strcharpart(ln, end, 1) == '”'
-        let inner_string = strcharpart(ln, start + 1, end - start - 1)
-        let before = strcharpart(ln, 0, start)
-        let after = strcharpart(ln, end + 1, lnlen)
-        call setline('.', before .. s:JellyCompressString(inner_string) .. after)
+    let groupname = synIDattr(synID(line('.'), col('.'), 0), 'name')
+    if groupname ==# 'jellyString'
+      call search('\v“', 'bcW')
+      normal! v
+      call search('\v”', 'cW')
+      normal! "zy
+      let zlen = strchars(@z)
+      let str = strcharpart(@z, 1, zlen - 2)
+      let last = strcharpart(@z, zlen - 1)
+      if last ==# '”'
+        execute 'normal! gv"_c' .. JellyCompressString(str) .. "\<esc>"
       endif
+    elseif groupname ==# 'jellyNumber'
+      call search('\v\d+', 'bcW')
+      normal! v
+      call search('\v\d+', 'ceW')
+      normal! "zy
+      execute 'normal! gv"_c' .. JellyCompressInteger(@z) .. "\<esc>"
     endif
   endfunction
+
 else
+
   function! JellyCompress() abort
     echoerr 'Compression needs Python 3'
   endfunction
+
 endif
 
-nnoremap <leader>jc <cmd>call JellyCompress()<cr>
-inoremap <buffer> <silent> <expr> <tab> <SID>JellyDigraphToChar()
+nnoremap <buffer>                 <leader>jb :echo JellyByteCount()<cr>
+nnoremap <buffer> <silent>        <leader>jc :call JellyCompress()<cr>
+nnoremap <buffer>                 <leader>jr :!jelly fun "%:p"<space>
+inoremap <buffer> <silent> <expr> <tab>      <SID>JellyDigraphToChar()
